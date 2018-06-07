@@ -3,12 +3,13 @@
 var CLOUD_WIDTH = 420; // px
 var CLOUD_HEIGHT = 270; // px
 
-var histogramHeigth = 150; // px;
+var HISTOGRAM_HEIGHT = 150; // px;
 
-var barWidth = 40; // px;
-var indent = 90; // px;
-var initialX = 150; // px;
-var initialY = 240; // px;
+var BAR_WIDTH = 40; // px;
+var INDENT = 90; // px;
+var INITIAL_X = 150; // px;
+var INITIAL_Y = 240; // px;
+
 
 // drawing cloud w/shadow
 var renderCloud = function (ctx, x1, y1, x2, y2, color1, color2) {
@@ -30,32 +31,33 @@ var renderGameMessage = function (ctx, x, y, color, font, string) {
 
 // finding longest time
 var findLongestTime = function (arr) {
-  var max = arr[0];
-
-  for (var l = 0; l < arr.length; l++) {
-    if (arr[l] > max) {
-      max = arr[l];
-    }
-  }
+  var max = Math.max.apply(null, arr);
   return max;
+};
+
+// getting pillar's/text coordinates (X, Y)
+var getPillarX = function (i) {
+  return INITIAL_X + INDENT * i;
+};
+var getPillarTimeTextY = function (i, times, step) {
+  return INITIAL_Y - times[i] * step - 10;
 };
 
 // drawing histogram pillar
 var renderHistogramPillar = function (ctx, i, times, step) {
-  ctx.fillRect(initialX + indent * i, initialY, barWidth, (-times[i] * step));
+  ctx.fillRect(getPillarX(i), INITIAL_Y, BAR_WIDTH, (-times[i] * step));
 };
 // drawing histogram pillar's text
 var renderHistogramPillarText = function (ctx, times, names, i, color, step) {
   ctx.fillStyle = color;
-  ctx.fillText(times[i].toFixed(0), initialX + indent * i, initialY - times[i] * step - 10);
-  ctx.fillText(names[i], initialX + indent * i, initialY + 20);
+  ctx.fillText(times[i].toFixed(0), getPillarX(i), getPillarTimeTextY(i, times, step));
+  ctx.fillText(names[i], getPillarX(i), INITIAL_Y + 20);
 };
 
 // getting random shade of color
-var getRandomShadeOfColor = function (ctx, r, g, b) {
-  ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ', ' + (Math.random() * 0.25 + 0.75) + ')';
+var getRandomColorShade = function (r, g, b) {
+  return 'rgba(' + r + ',' + g + ',' + b + ', ' + (Math.random() * 0.25 + 0.75) + ')';
 };
-
 
 // drawing statistics pop-up
 window.renderStatistics = function (ctx, names, times) {
@@ -64,15 +66,13 @@ window.renderStatistics = function (ctx, names, times) {
   renderGameMessage(ctx, 120, 40, 'rgb(0, 0, 0)', '16px PT Mono', 'Ура вы победили!');
   renderGameMessage(ctx, 120, 60, 'rgb(0, 0, 0)', '16px PT Mono', 'Список результатов:');
 
-  var step = histogramHeigth / (findLongestTime(times) - 0);
+  var step = HISTOGRAM_HEIGHT / (findLongestTime(times) - 0);
 
   // drawing histograms
   for (var i = 0; i < times.length; i++) {
-    if (names[i] === 'Вы') {
-      ctx.fillStyle = 'rgba(255, 0, 0, 1)';
-    } else {
-      getRandomShadeOfColor(ctx, 26, 42, 162);
-    }
+    var barColor = names[i] === 'Вы' ? 'rgba(255, 0, 0, 1)' : getRandomColorShade(26, 42, 162);
+
+    ctx.fillStyle = barColor;
 
     renderHistogramPillar(ctx, i, times, step);
     renderHistogramPillarText(ctx, times, names, i, 'rgb(0, 0, 0)', step);
